@@ -29,22 +29,33 @@ class DatabaseGeneratorController
      */
     public function generateFullDatabase(): void
     {
+        // Log para debug
+        error_log("=== GENERATE FULL DATABASE CALLED ===");
+        
         try {
             // Obtener el esquema JSON del request
             $json = file_get_contents('php://input');
+            error_log("JSON recibido: " . substr($json, 0, 200));
+            
             $schema = json_decode($json, true);
 
             if (!$schema) {
+                error_log("ERROR: JSON inválido");
                 $this->jsonResponse([
                     'success' => false,
-                    'error' => 'Esquema JSON inválido'
+                    'error' => 'Esquema JSON inválido o vacío'
                 ]);
                 return;
             }
 
+            error_log("Schema decodificado correctamente");
+            error_log("Base de datos: " . ($schema['database_name'] ?? 'NO ESPECIFICADA'));
+            error_log("Tablas: " . (isset($schema['tables']) ? count($schema['tables']) : 0));
+
             // Validar esquema
             $errors = $this->schemaBuilder->validateSchema($schema);
             if (!empty($errors)) {
+                error_log("ERROR: Validación falló - " . implode(', ', $errors));
                 $this->jsonResponse([
                     'success' => false,
                     'error' => 'Errores de validación: ' . implode(', ', $errors)
@@ -52,16 +63,21 @@ class DatabaseGeneratorController
                 return;
             }
 
+            error_log("✅ Validación exitosa, creando base de datos...");
+
             // 1. Crear la base de datos con todas las tablas
             $dbResult = $this->schemaBuilder->createFullDatabase($schema);
 
             if (!$dbResult['success']) {
+                error_log("ERROR: createFullDatabase falló - " . ($dbResult['error'] ?? 'sin error específico'));
                 $this->jsonResponse([
                     'success' => false,
-                    'error' => $dbResult['error']
+                    'error' => $dbResult['error'] ?? 'Error desconocido al crear la base de datos'
                 ]);
                 return;
             }
+
+            error_log("✅ Base de datos creada, generando CRUDs...");
 
             // 2. Generar CRUDs para todas las tablas
             $crudResult = $this->crudGenerator->generateAllCruds(
@@ -73,12 +89,15 @@ class DatabaseGeneratorController
             );
 
             if (!$crudResult['success']) {
+                error_log("ERROR: generateAllCruds falló - " . ($crudResult['error'] ?? 'sin error específico'));
                 $this->jsonResponse([
                     'success' => false,
-                    'error' => $crudResult['error']
+                    'error' => $crudResult['error'] ?? 'Error desconocido al generar CRUDs'
                 ]);
                 return;
             }
+
+            error_log("✅ CRUDs generados, exportando SQL...");
 
             // 3. Exportar SQL de la base de datos
             $sqlExport = $this->schemaBuilder->exportSchema($schema['database_name']);
@@ -90,6 +109,8 @@ class DatabaseGeneratorController
             
             $sqlFilePath = $exportsDir . $schema['database_name'] . '_export_' . date('Ymd_His') . '.sql';
             file_put_contents($sqlFilePath, $sqlExport);
+
+            error_log("✅ TODO COMPLETO - SQL exportado a: " . $sqlFilePath);
 
             // Respuesta exitosa
             $this->jsonResponse([
@@ -104,10 +125,20 @@ class DatabaseGeneratorController
                 'relations_count' => isset($schema['relationships']) ? count($schema['relationships']) : 0
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\PDOException $e) {
+            error_log("ERROR PDO: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             $this->jsonResponse([
                 'success' => false,
-                'error' => 'Error general: ' . $e->getMessage()
+                'error' => 'Error de base de datos: ' . $e->getMessage()
+            ]);
+        } catch (\Exception $e) {
+            error_log("ERROR GENERAL: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            $this->jsonResponse([
+                'success' => false,
+                'error' => 'Error general: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
@@ -117,6 +148,8 @@ class DatabaseGeneratorController
      */
     public function importSchema(): void
     {
+        error_log("=== IMPORT SCHEMA CALLED ===");
+        
         try {
             if (!isset($_FILES['schema_file'])) {
                 throw new \Exception('No se recibió ningún archivo');
@@ -151,6 +184,7 @@ class DatabaseGeneratorController
             ]);
 
         } catch (\Exception $e) {
+            error_log("ERROR en importSchema: " . $e->getMessage());
             $this->jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -163,6 +197,8 @@ class DatabaseGeneratorController
      */
     public function listDatabases(): void
     {
+        error_log("=== LIST DATABASES CALLED ===");
+        
         try {
             $db = \App\Config\Database::getInstance()->getConnection();
             $stmt = $db->query("SHOW DATABASES");
@@ -180,6 +216,7 @@ class DatabaseGeneratorController
             ]);
 
         } catch (\Exception $e) {
+            error_log("ERROR en listDatabases: " . $e->getMessage());
             $this->jsonResponse([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -192,8 +229,15 @@ class DatabaseGeneratorController
      */
     private function jsonResponse(array $data): void
     {
-        header('Content-Type: application/json');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        // Importante: limpiar cualquier output previo
+        if (ob_get_length()) {
+            ob_clean();
+        }
+        
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($data['success'] ? 200 : 400);
+        
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
 }

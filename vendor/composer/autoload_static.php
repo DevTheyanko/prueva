@@ -49,19 +49,6 @@ class ComposerStaticInit38b953421194a3d2930204a60d81fbfb
     );
 
     public static $classMap = array (
-        'App\\Config\\Database' => __DIR__ . '/../..' . '/config/Database.php',
-        'App\\Controllers\\CrudController' => __DIR__ . '/../..' . '/src/Controllers/CrudController.php',
-        'App\\Controllers\\DatabaseGeneratorController' => __DIR__ . '/../..' . '/src/Controllers/DatabaseGeneratorController.php',
-        'App\\Controllers\\ExportController' => __DIR__ . '/../..' . '/src/Controllers/ExportController.php',
-        'App\\Controllers\\GeneratorController' => __DIR__ . '/../..' . '/src/Controllers/GeneratorController.php',
-        'App\\Core\\Router' => __DIR__ . '/../..' . '/src/Core/Router.php',
-        'App\\Core\\View' => __DIR__ . '/../..' . '/src/Core/View.php',
-        'App\\Models\\Model' => __DIR__ . '/../..' . '/src/Models/Model.php',
-        'App\\Services\\CrudGenerator' => __DIR__ . '/../..' . '/src/Services/CrudGenerator.php',
-        'App\\Services\\DatabaseGenerator' => __DIR__ . '/../..' . '/src/Services/DatabaseGenerator.php',
-        'App\\Services\\DatabaseSchemaBuilder' => __DIR__ . '/../..' . '/src/Services/DatabaseSchemaBuilder.php',
-        'App\\Services\\EnhancedCrudGenerator' => __DIR__ . '/../..' . '/src/Services/EnhancedCrudGenerator.php',
-        'App\\Services\\ExportService' => __DIR__ . '/../..' . '/src/Services/ExportService.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
 

@@ -873,14 +873,49 @@ function updatePreview() {
     }
 }
 
+
+// También mejorar la función buildSchema para validar mejor
 function buildSchema() {
-    return {
-        database_name: document.getElementById('dbName')?.value || 'mi_base_datos',
-        description: document.getElementById('dbDescription')?.value || '',
+    const schema = {
+        database_name: document.getElementById('dbName')?.value.trim() || 'mi_base_datos',
+        description: document.getElementById('dbDescription')?.value.trim() || '',
         insert_sample_data: document.getElementById('insertSampleData')?.checked || false,
-        tables: tables,
-        relationships: relations
+        tables: [],
+        relationships: []
     };
+    
+    // Limpiar y validar tablas
+    schema.tables = tables.map(table => {
+        return {
+            id: table.id,
+            name: table.name.trim(),
+            timestamps: table.timestamps || false,
+            soft_deletes: table.soft_deletes || false,
+            fields: (table.fields || []).map(field => {
+                return {
+                    name: field.name.trim(),
+                    type: field.type,
+                    length: field.length === '' ? null : field.length,
+                    nullable: field.nullable || false,
+                    unsigned: field.unsigned || false
+                };
+            }).filter(f => f.name !== '') // Filtrar campos sin nombre
+        };
+    }).filter(t => t.name !== ''); // Filtrar tablas sin nombre
+    
+    // Limpiar y validar relaciones
+    schema.relationships = relations.map(rel => {
+        return {
+            from_table: rel.from_table.trim(),
+            from_column: rel.from_column.trim(),
+            to_table: rel.to_table.trim(),
+            to_column: rel.to_column.trim(),
+            on_delete: rel.on_delete || 'CASCADE',
+            on_update: rel.on_update || 'CASCADE'
+        };
+    }).filter(r => r.from_table && r.from_column && r.to_table && r.to_column);
+    
+    return schema;
 }
 
 function downloadJSON() {
@@ -894,8 +929,15 @@ function downloadJSON() {
     URL.revokeObjectURL(url);
 }
 
+// Reemplazar la función generateDatabase() en database_builder.php con esta versión mejorada
+
 function generateDatabase() {
+    console.log('=== GENERATE DATABASE INICIADO ===');
+    
     const schema = buildSchema();
+    
+    console.log('Schema construido:', schema);
+    console.log('BASE_PATH:', BASE_PATH);
     
     // Validaciones
     if (!schema.database_name || schema.database_name === 'mi_base_datos') {
@@ -923,40 +965,93 @@ function generateDatabase() {
             switchTab('tables');
             return;
         }
+        
+        // Validar que los campos tengan nombres
+        for (let j = 0; j < tables[i].fields.length; j++) {
+            if (!tables[i].fields[j].name) {
+                alert(`❌ Campo #${j + 1} de la tabla "${tables[i].name}" no tiene nombre`);
+                switchTab('tables');
+                return;
+            }
+        }
     }
+
+    console.log('✅ Validaciones pasadas');
 
     const button = event.target;
     const originalText = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '⏳ Generando...';
 
-    fetch(BASE_PATH + '/api/generate-full-database', {
+    const url = BASE_PATH + '/api/generate-full-database';
+    console.log('URL completa:', url);
+    console.log('Enviando request...');
+
+    fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
         body: JSON.stringify(schema)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Primero obtener el texto para ver qué respondió
+        return response.text().then(text => {
+            console.log('Response text:', text);
+            
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Error parseando JSON:', e);
+                console.error('Respuesta recibida:', text);
+                throw new Error('La respuesta no es JSON válido: ' + text.substring(0, 100));
+            }
+        });
+    })
     .then(data => {
+        console.log('Data recibida:', data);
         button.disabled = false;
         button.innerHTML = originalText;
 
         if (data.success) {
             alert('✅ ¡Base de datos y CRUDs generados correctamente!\n\n' +
+                  `Base de datos: ${schema.database_name}\n` +
                   `Tablas: ${data.tables_count}\n` +
                   `Relaciones: ${data.relations_count}`);
             window.location.href = BASE_PATH + '/';
         } else {
             alert('❌ Error: ' + data.error);
+            if (data.trace) {
+                console.error('Stack trace:', data.trace);
+            }
         }
     })
     .catch(error => {
+        console.error('Error completo:', error);
         button.disabled = false;
         button.innerHTML = originalText;
-        alert('❌ Error de conexión: ' + error.message);
-        console.error(error);
+        
+        let errorMsg = '❌ Error: ' + error.message;
+        
+        if (error.message.includes('404')) {
+            errorMsg += '\n\n🔍 Posibles causas:\n' +
+                       '1. La ruta /api/generate-full-database no está registrada en index.php\n' +
+                       '2. El archivo index.php no incluye DatabaseGeneratorController\n' +
+                       '3. Hay un problema con el .htaccess\n\n' +
+                       'Revisa el archivo index.php y verifica que las rutas estén correctas.';
+        }
+        
+        alert(errorMsg);
     });
 }
-
 // ============================================
 // EJEMPLOS PREDEFINIDOS
 // ============================================

@@ -6,18 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'App\\Config\\Database' => $baseDir . '/config/Database.php',
-    'App\\Controllers\\CrudController' => $baseDir . '/src/Controllers/CrudController.php',
-    'App\\Controllers\\DatabaseGeneratorController' => $baseDir . '/src/Controllers/DatabaseGeneratorController.php',
-    'App\\Controllers\\ExportController' => $baseDir . '/src/Controllers/ExportController.php',
-    'App\\Controllers\\GeneratorController' => $baseDir . '/src/Controllers/GeneratorController.php',
-    'App\\Core\\Router' => $baseDir . '/src/Core/Router.php',
-    'App\\Core\\View' => $baseDir . '/src/Core/View.php',
-    'App\\Models\\Model' => $baseDir . '/src/Models/Model.php',
-    'App\\Services\\CrudGenerator' => $baseDir . '/src/Services/CrudGenerator.php',
-    'App\\Services\\DatabaseGenerator' => $baseDir . '/src/Services/DatabaseGenerator.php',
-    'App\\Services\\DatabaseSchemaBuilder' => $baseDir . '/src/Services/DatabaseSchemaBuilder.php',
-    'App\\Services\\EnhancedCrudGenerator' => $baseDir . '/src/Services/EnhancedCrudGenerator.php',
-    'App\\Services\\ExportService' => $baseDir . '/src/Services/ExportService.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );

@@ -8,6 +8,7 @@ use App\Controllers\ExportController;
 use App\Controllers\DatabaseGeneratorController;
 use App\Controllers\FullExportController;
 
+
 session_start();
 
 // Configurar la ruta base del proyecto
@@ -24,12 +25,13 @@ $router->add('POST', '/generator/generate', [GeneratorController::class, 'genera
 $router->add('GET', '/diagnostic', [GeneratorController::class, 'diagnostic']);
 
 // ============================================
-// RUTAS DEL DATABASE BUILDER
+// RUTAS DEL DATABASE BUILDER (CRÍTICAS - DEBEN ESTAR ANTES DE /CRUD)
 // ============================================
 $router->add('GET', '/generator/database-builder', [DatabaseGeneratorController::class, 'showBuilder']);
 $router->add('POST', '/api/generate-full-database', [DatabaseGeneratorController::class, 'generateFullDatabase']);
 $router->add('POST', '/api/import-schema', [DatabaseGeneratorController::class, 'importSchema']);
 $router->add('GET', '/api/list-databases', [DatabaseGeneratorController::class, 'listDatabases']);
+
 
 // ============================================
 // RUTAS DE EXPORTACIÓN INDIVIDUAL
@@ -38,13 +40,13 @@ $router->add('GET', '/export/{entity}', [ExportController::class, 'showExportOpt
 $router->add('POST', '/export/{entity}/download', [ExportController::class, 'export']);
 
 // ============================================
-// RUTAS DE EXPORTACIÓN COMPLETA (NUEVO)
+// RUTAS DE EXPORTACIÓN COMPLETA
 // ============================================
 $router->add('GET', '/export/full-project', [FullExportController::class, 'showExportOptions']);
 $router->add('POST', '/export/full-project/download', [FullExportController::class, 'exportFullProject']);
 
 // ============================================
-// RUTAS DINÁMICAS DEL CRUD
+// RUTAS DINÁMICAS DEL CRUD (DEBEN IR AL FINAL)
 // ============================================
 $router->add('GET', '/crud/{entity}', [CrudController::class, 'index']);
 $router->add('GET', '/crud/{entity}/create', [CrudController::class, 'create']);
