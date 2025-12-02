@@ -41,6 +41,12 @@
         
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .table-card {
@@ -49,6 +55,12 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .table-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
         }
         
         .table-card h3 {
@@ -65,6 +77,15 @@
             gap: 10px;
             margin-bottom: 10px;
             align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .field-row:hover {
+            background: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         .field-row input,
@@ -72,10 +93,11 @@
             padding: 8px;
             border: 1px solid #cbd5e0;
             border-radius: 4px;
+            font-size: 14px;
         }
         
         .relation-card {
-            background: #fff3cd;
+            background: #fff9e6;
             border: 2px solid #ffc107;
             border-radius: 8px;
             padding: 15px;
@@ -97,10 +119,12 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            transition: all 0.2s;
         }
         
         .btn-remove:hover {
             background: #c53030;
+            transform: scale(1.05);
         }
         
         .json-preview {
@@ -113,6 +137,7 @@
             max-height: 500px;
             overflow-y: auto;
             white-space: pre-wrap;
+            line-height: 1.5;
         }
         
         .examples-grid {
@@ -146,18 +171,51 @@
             font-size: 12px;
             color: #64748b;
             margin-bottom: 4px;
+            font-weight: 600;
         }
         
         .checkbox-inline {
             display: flex;
-            gap: 15px;
-            margin: 10px 0;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
         }
         
         .checkbox-inline label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .checkbox-inline input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .success-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #e0e7ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .info-box strong {
+            color: #667eea;
         }
     </style>
 </head>
@@ -179,60 +237,89 @@
 
             <!-- TAB 1: Configuración -->
             <div class="tab-content active" id="config">
-                <h2>Configuración General</h2>
+                <h2>⚙️ Configuración General</h2>
+                
+                <div class="info-box">
+                    <strong>📝 Información:</strong> Define los datos básicos de tu base de datos. 
+                    Esta información se usará para crear la estructura completa con todas las tablas y relaciones.
+                </div>
                 
                 <div class="form-group">
-                    <label>Nombre de la Base de Datos:</label>
-                    <input type="text" id="dbName" placeholder="mi_base_datos" required>
+                    <label>Nombre de la Base de Datos: <span style="color: red;">*</span></label>
+                    <input type="text" id="dbName" placeholder="blog_system, ecommerce_db, school_management" required>
                     <small>Ejemplo: blog_system, ecommerce_db, school_management</small>
                 </div>
 
                 <div class="form-group">
                     <label>Descripción:</label>
-                    <textarea id="dbDescription" rows="3" placeholder="Describe brevemente el propósito de esta base de datos"></textarea>
+                    <textarea id="dbDescription" rows="3" placeholder="Describe el propósito de esta base de datos..."></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>
+                    <label style="display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="insertSampleData">
-                        Insertar datos de ejemplo
+                        <span>Insertar datos de ejemplo para pruebas</span>
                     </label>
-                    <small>Crea registros de muestra para probar</small>
+                    <small>Esto creará registros de muestra en cada tabla</small>
                 </div>
 
-                <button class="btn btn-primary" onclick="nextTab('tables')">Siguiente: Crear Tablas →</button>
+                <button class="btn btn-primary btn-lg" onclick="nextTab('tables')">
+                    Siguiente: Crear Tablas →
+                </button>
             </div>
 
             <!-- TAB 2: Tablas -->
             <div class="tab-content" id="tables">
-                <h2>Definir Tablas</h2>
-                <p class="text-muted">Define las tablas que tendrá tu base de datos</p>
+                <h2>📋 Definir Tablas</h2>
+                <p class="text-muted">Define las tablas que tendrá tu base de datos. Cada tabla tendrá un ID auto-incremental automático.</p>
+
+                <div class="info-box">
+                    <strong>💡 Consejo:</strong> Usa nombres en plural para las tablas (users, products, posts). 
+                    Los campos timestamp y soft delete se agregan automáticamente si los activas.
+                </div>
 
                 <div id="tablesContainer"></div>
 
-                <button class="btn btn-secondary" onclick="addTable()">+ Agregar Tabla</button>
-                <button class="btn btn-primary" onclick="nextTab('relations')">Siguiente: Relaciones →</button>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-success" onclick="addTable()">
+                        ➕ Agregar Tabla
+                    </button>
+                    <button class="btn btn-primary" onclick="nextTab('relations')">
+                        Siguiente: Relaciones →
+                    </button>
+                </div>
             </div>
 
             <!-- TAB 3: Relaciones -->
             <div class="tab-content" id="relations">
-                <h2>Definir Relaciones (Foreign Keys)</h2>
-                <p class="text-muted">Conecta las tablas mediante claves foráneas</p>
+                <h2>🔗 Definir Relaciones (Foreign Keys)</h2>
+                <p class="text-muted">Conecta las tablas mediante claves foráneas. Esto es opcional pero recomendado.</p>
+
+                <div class="info-box">
+                    <strong>📌 Nota:</strong> Las relaciones son opcionales. Si no necesitas conectar tablas, 
+                    puedes omitir este paso.
+                </div>
 
                 <div id="relationsContainer"></div>
 
-                <button class="btn btn-secondary" onclick="addRelation()">+ Agregar Relación</button>
-                <button class="btn btn-primary" onclick="nextTab('preview')">Ver Vista Previa →</button>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="addRelation()">
+                        ➕ Agregar Relación
+                    </button>
+                    <button class="btn btn-primary" onclick="nextTab('preview')">
+                        Ver Vista Previa →
+                    </button>
+                </div>
             </div>
 
             <!-- TAB 4: Vista Previa -->
             <div class="tab-content" id="preview">
-                <h2>Vista Previa del Esquema JSON</h2>
-                <p class="text-muted">Revisa el esquema antes de generar</p>
+                <h2>👁️ Vista Previa del Esquema JSON</h2>
+                <p class="text-muted">Revisa el esquema completo antes de generar la base de datos</p>
 
                 <div class="json-preview" id="jsonPreview"></div>
 
-                <div style="margin-top: 20px;">
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
                     <button class="btn btn-success btn-lg" onclick="generateDatabase()">
                         🚀 Generar Base de Datos y CRUDs
                     </button>
@@ -244,43 +331,46 @@
 
             <!-- TAB 5: Ejemplos -->
             <div class="tab-content" id="examples">
-                <h2>Cargar Ejemplo Predefinido</h2>
+                <h2>📚 Cargar Ejemplo Predefinido</h2>
                 <p class="text-muted">Selecciona un ejemplo para comenzar rápidamente</p>
 
                 <div class="examples-grid">
                     <div class="example-card" onclick="loadExample('blog')">
                         <h4>📝 Sistema de Blog</h4>
-                        <p><strong>Tablas:</strong> users, posts, categories, comments</p>
-                        <p><strong>Características:</strong> Blog completo con usuarios, categorías y comentarios</p>
-                        <ul style="font-size: 13px;">
-                            <li>Usuarios con roles</li>
-                            <li>Posts con soft deletes</li>
-                            <li>Sistema de comentarios</li>
-                            <li>Categorías</li>
+                        <span class="success-badge">COMPLETO</span>
+                        <p style="margin: 10px 0;"><strong>Tablas:</strong> users, posts, categories, comments</p>
+                        <p><strong>Características:</strong></p>
+                        <ul style="font-size: 13px; color: #64748b;">
+                            <li>✅ Usuarios con autenticación</li>
+                            <li>✅ Posts con soft deletes</li>
+                            <li>✅ Sistema de comentarios</li>
+                            <li>✅ Categorías</li>
                         </ul>
                     </div>
 
                     <div class="example-card" onclick="loadExample('ecommerce')">
                         <h4>🛒 E-commerce</h4>
-                        <p><strong>Tablas:</strong> customers, products, orders</p>
-                        <p><strong>Características:</strong> Tienda online completa</p>
-                        <ul style="font-size: 13px;">
-                            <li>Gestión de clientes</li>
-                            <li>Catálogo de productos</li>
-                            <li>Sistema de órdenes</li>
-                            <li>Control de stock</li>
+                        <span class="success-badge">COMPLETO</span>
+                        <p style="margin: 10px 0;"><strong>Tablas:</strong> customers, products, orders</p>
+                        <p><strong>Características:</strong></p>
+                        <ul style="font-size: 13px; color: #64748b;">
+                            <li>✅ Gestión de clientes</li>
+                            <li>✅ Catálogo de productos</li>
+                            <li>✅ Sistema de órdenes</li>
+                            <li>✅ Control de inventario</li>
                         </ul>
                     </div>
 
                     <div class="example-card" onclick="loadExample('school')">
                         <h4>🎓 Gestión Escolar</h4>
-                        <p><strong>Tablas:</strong> students, teachers, courses, enrollments</p>
-                        <p><strong>Características:</strong> Sistema académico completo</p>
-                        <ul style="font-size: 13px;">
-                            <li>Estudiantes y profesores</li>
-                            <li>Catálogo de cursos</li>
-                            <li>Inscripciones</li>
-                            <li>Calificaciones</li>
+                        <span class="success-badge">COMPLETO</span>
+                        <p style="margin: 10px 0;"><strong>Tablas:</strong> students, teachers, courses</p>
+                        <p><strong>Características:</strong></p>
+                        <ul style="font-size: 13px; color: #64748b;">
+                            <li>✅ Estudiantes y profesores</li>
+                            <li>✅ Catálogo de cursos</li>
+                            <li>✅ Sistema de inscripciones</li>
+                            <li>✅ Gestión de calificaciones</li>
                         </ul>
                     </div>
                 </div>
@@ -289,109 +379,243 @@
     </div>
 
     <script>
-        // Agregar este script al final de database_builder.php, reemplazando el <script> existente
+       // ============================================
+// CONSTRUCTOR DE BASE DE DATOS - MEJORADO
+// ============================================
 
-const BASE_PATH = '<?= BASE_PATH ?>';
+const BASE_PATH = window.BASE_PATH || '';
 let tables = [];
 let relations = [];
+let tableCounter = 0;
 
-// Sistema de Tabs
-document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        const tabName = tab.dataset.tab;
-        switchTab(tabName);
-    });
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Database Builder inicializado');
+    
+    initializeTabs();
+    initializeEventListeners();
+    
+    // Renderizar containers vacíos
+    renderTables();
+    renderRelations();
+    
+    console.log('✅ Sistema listo');
 });
 
+// ============================================
+// SISTEMA DE TABS
+// ============================================
+function initializeTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+}
+
 function switchTab(tabName) {
+    // Remover active de todos
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(tabName).classList.add('active');
+    // Activar el seleccionado
+    const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+    const selectedContent = document.getElementById(tabName);
     
-    if (tabName === 'preview') {
-        updatePreview();
+    if (selectedTab && selectedContent) {
+        selectedTab.classList.add('active');
+        selectedContent.classList.add('active');
+        
+        // Si es preview, actualizar
+        if (tabName === 'preview') {
+            updatePreview();
+        }
     }
 }
 
 function nextTab(tabName) {
     switchTab(tabName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Agregar Tabla
+// ============================================
+// EVENT LISTENERS
+// ============================================
+function initializeEventListeners() {
+    // Botón agregar tabla
+    const addTableBtn = document.querySelector('[onclick*="addTable"]');
+    if (addTableBtn) {
+        addTableBtn.onclick = addTable;
+    }
+    
+    // Botón agregar relación
+    const addRelationBtn = document.querySelector('[onclick*="addRelation"]');
+    if (addRelationBtn) {
+        addRelationBtn.onclick = addRelation;
+    }
+    
+    // Auto-completar nombre del proyecto
+    const dbNameInput = document.getElementById('dbName');
+    if (dbNameInput) {
+        dbNameInput.addEventListener('input', function() {
+            const projectNameInput = document.getElementById('project_name');
+            if (projectNameInput && !projectNameInput.value) {
+                projectNameInput.value = this.value + '_project';
+            }
+        });
+    }
+}
+
+// ============================================
+// GESTIÓN DE TABLAS
+// ============================================
 function addTable() {
+    console.log('➕ Agregando nueva tabla...');
+    
+    tableCounter++;
     const tableId = 'table_' + Date.now();
-    tables.push({
+    
+    const newTable = {
         id: tableId,
         name: '',
         timestamps: true,
         soft_deletes: false,
         fields: []
-    });
+    };
     
+    tables.push(newTable);
+    console.log('✅ Tabla agregada:', newTable);
+    console.log('📊 Total tablas:', tables.length);
+    
+    renderTables();
+}
+
+function removeTable(index) {
+    if (!confirm('¿Eliminar esta tabla?')) {
+        return;
+    }
+    
+    console.log('🗑️ Eliminando tabla index:', index);
+    tables.splice(index, 1);
     renderTables();
 }
 
 function renderTables() {
     const container = document.getElementById('tablesContainer');
-    container.innerHTML = '';
-
-    if (tables.length === 0) {
-        container.innerHTML = '<p class="text-muted">No hay tablas agregadas. Click en "+ Agregar Tabla" para comenzar.</p>';
+    
+    if (!container) {
+        console.error('❌ No se encontró tablesContainer');
         return;
     }
-
-    tables.forEach((table, index) => {
-        const tableCard = document.createElement('div');
-        tableCard.className = 'table-card';
-        tableCard.innerHTML = `
-            <h3>
-                Tabla #${index + 1}
-                <button class="btn-remove" onclick="removeTable(${index})">🗑️ Eliminar</button>
-            </h3>
-            
-            <div class="form-group">
-                <label>Nombre de la tabla:</label>
-                <input type="text" placeholder="usuarios, productos, etc." 
-                       value="${table.name}"
-                       onchange="tables[${index}].name = this.value">
+    
+    container.innerHTML = '';
+    
+    if (tables.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #cbd5e0;">
+                <p style="color: #64748b; font-size: 1.1em; margin: 0;">
+                    📋 No hay tablas agregadas
+                </p>
+                <p style="color: #94a3b8; margin: 10px 0 0 0;">
+                    Haz clic en "+ Agregar Tabla" para comenzar
+                </p>
             </div>
-
-            <div class="checkbox-inline">
-                <label>
-                    <input type="checkbox" ${table.timestamps ? 'checked' : ''}
-                           onchange="tables[${index}].timestamps = this.checked">
-                    Timestamps (created_at, updated_at)
-                </label>
-                <label>
-                    <input type="checkbox" ${table.soft_deletes ? 'checked' : ''}
-                           onchange="tables[${index}].soft_deletes = this.checked">
-                    Soft Deletes (deleted_at)
-                </label>
-            </div>
-
-            <h4>Campos:</h4>
-            <div class="label-small" style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 0.8fr 0.8fr 80px; gap: 10px; margin-bottom: 8px;">
-                <div>Nombre</div>
-                <div>Tipo</div>
-                <div>Longitud</div>
-                <div>Nullable</div>
-                <div>Unsigned</div>
-                <div>Acción</div>
-            </div>
-            
-            <div id="fields_${tableId}"></div>
-            
-            <button class="btn btn-sm btn-secondary" onclick="addField(${index})">+ Campo</button>
         `;
-        
+        return;
+    }
+    
+    tables.forEach((table, index) => {
+        const tableCard = createTableCard(table, index);
         container.appendChild(tableCard);
-        renderFields(index);
     });
+    
+    console.log('✅ Tablas renderizadas:', tables.length);
 }
 
+function createTableCard(table, index) {
+    const card = document.createElement('div');
+    card.className = 'table-card';
+    card.innerHTML = `
+        <h3>
+            📋 Tabla #${index + 1}
+            <button type="button" class="btn-remove" onclick="removeTable(${index})">🗑️ Eliminar</button>
+        </h3>
+        
+        <div class="form-group">
+            <label>Nombre de la tabla:</label>
+            <input type="text" 
+                   placeholder="usuarios, productos, posts..." 
+                   value="${table.name || ''}"
+                   onchange="updateTableName(${index}, this.value)"
+                   style="font-weight: 600;">
+            <small>Nombre de la tabla en la base de datos (plural recomendado)</small>
+        </div>
+
+        <div class="checkbox-inline">
+            <label>
+                <input type="checkbox" 
+                       ${table.timestamps ? 'checked' : ''}
+                       onchange="updateTableTimestamps(${index}, this.checked)">
+                <strong>Timestamps</strong> (created_at, updated_at)
+            </label>
+            <label>
+                <input type="checkbox" 
+                       ${table.soft_deletes ? 'checked' : ''}
+                       onchange="updateTableSoftDeletes(${index}, this.checked)">
+                <strong>Soft Deletes</strong> (deleted_at)
+            </label>
+        </div>
+
+        <hr style="margin: 20px 0;">
+
+        <h4>📝 Campos de la tabla</h4>
+        <div class="label-small" style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 0.8fr 0.8fr 80px; gap: 10px; margin-bottom: 8px; font-weight: 600; color: #64748b;">
+            <div>Nombre</div>
+            <div>Tipo</div>
+            <div>Longitud</div>
+            <div>Nullable</div>
+            <div>Unsigned</div>
+            <div>Acción</div>
+        </div>
+        
+        <div id="fields_${table.id}"></div>
+        
+        <button type="button" class="btn btn-sm btn-secondary" onclick="addField(${index})" style="margin-top: 10px;">
+            ➕ Agregar Campo
+        </button>
+    `;
+    
+    // Después de crear el card, renderizar los campos
+    setTimeout(() => renderFields(index), 0);
+    
+    return card;
+}
+
+// ============================================
+// FUNCIONES DE ACTUALIZACIÓN DE TABLA
+// ============================================
+function updateTableName(index, value) {
+    tables[index].name = value;
+    console.log('✏️ Tabla actualizada:', tables[index]);
+}
+
+function updateTableTimestamps(index, checked) {
+    tables[index].timestamps = checked;
+}
+
+function updateTableSoftDeletes(index, checked) {
+    tables[index].soft_deletes = checked;
+}
+
+// ============================================
+// GESTIÓN DE CAMPOS
+// ============================================
 function addField(tableIndex) {
+    console.log('➕ Agregando campo a tabla:', tableIndex);
+    
     if (!tables[tableIndex].fields) {
         tables[tableIndex].fields = [];
     }
@@ -403,6 +627,13 @@ function addField(tableIndex) {
         nullable: false,
         unsigned: false
     });
+    
+    renderFields(tableIndex);
+}
+
+function removeField(tableIndex, fieldIndex) {
+    console.log('🗑️ Eliminando campo:', tableIndex, fieldIndex);
+    tables[tableIndex].fields.splice(fieldIndex, 1);
     renderFields(tableIndex);
 }
 
@@ -411,70 +642,111 @@ function renderFields(tableIndex) {
     const container = document.getElementById(`fields_${table.id}`);
     
     if (!container) {
-        console.error('Container not found for table:', table.id);
+        console.error('❌ Container de campos no encontrado:', table.id);
         return;
     }
     
     container.innerHTML = '';
-
+    
     if (!table.fields || table.fields.length === 0) {
-        container.innerHTML = '<p class="text-muted">No hay campos. Click en "+ Campo" para agregar.</p>';
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; background: #fff; border: 2px dashed #cbd5e0; border-radius: 5px;">
+                <p style="color: #94a3b8; margin: 0;">
+                    ➕ No hay campos. Haz clic en "Agregar Campo"
+                </p>
+            </div>
+        `;
         return;
     }
-
+    
     table.fields.forEach((field, fieldIndex) => {
-        const fieldRow = document.createElement('div');
-        fieldRow.className = 'field-row';
-        fieldRow.innerHTML = `
-            <input type="text" placeholder="nombre_campo" 
-                   value="${field.name || ''}"
-                   onchange="tables[${tableIndex}].fields[${fieldIndex}].name = this.value">
-            
-            <select onchange="tables[${tableIndex}].fields[${fieldIndex}].type = this.value; renderFields(${tableIndex})">
-                ${getTypeOptions(field.type)}
-            </select>
-            
-            <input type="text" placeholder="255" 
-                   value="${field.length || ''}"
-                   onchange="tables[${tableIndex}].fields[${fieldIndex}].length = this.value"
-                   ${['text', 'longtext', 'date', 'datetime', 'boolean'].includes(field.type) ? 'disabled' : ''}>
-            
-            <input type="checkbox" ${field.nullable ? 'checked' : ''}
-                   onchange="tables[${tableIndex}].fields[${fieldIndex}].nullable = this.checked">
-            
-            <input type="checkbox" ${field.unsigned ? 'checked' : ''}
-                   onchange="tables[${tableIndex}].fields[${fieldIndex}].unsigned = this.checked"
-                   ${!['integer', 'bigint', 'float', 'decimal'].includes(field.type) ? 'disabled' : ''}>
-            
-            <button class="btn-remove" onclick="removeField(${tableIndex}, ${fieldIndex})">🗑️</button>
-        `;
+        const fieldRow = createFieldRow(tableIndex, fieldIndex, field);
         container.appendChild(fieldRow);
     });
 }
 
+function createFieldRow(tableIndex, fieldIndex, field) {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    
+    const lengthDisabled = ['text', 'longtext', 'date', 'datetime', 'boolean', 'json', 'timestamp'].includes(field.type);
+    const unsignedDisabled = !['integer', 'bigint', 'float', 'decimal', 'tinyint', 'smallint', 'mediumint'].includes(field.type);
+    
+    row.innerHTML = `
+        <input type="text" 
+               placeholder="nombre_campo" 
+               value="${field.name || ''}"
+               onchange="updateFieldName(${tableIndex}, ${fieldIndex}, this.value)">
+        
+        <select onchange="updateFieldType(${tableIndex}, ${fieldIndex}, this.value)">
+            ${getTypeOptions(field.type)}
+        </select>
+        
+        <input type="text" 
+               placeholder="255" 
+               value="${field.length || ''}"
+               onchange="updateFieldLength(${tableIndex}, ${fieldIndex}, this.value)"
+               ${lengthDisabled ? 'disabled' : ''}>
+        
+        <input type="checkbox" 
+               ${field.nullable ? 'checked' : ''}
+               onchange="updateFieldNullable(${tableIndex}, ${fieldIndex}, this.checked)">
+        
+        <input type="checkbox" 
+               ${field.unsigned ? 'checked' : ''}
+               onchange="updateFieldUnsigned(${tableIndex}, ${fieldIndex}, this.checked)"
+               ${unsignedDisabled ? 'disabled' : ''}>
+        
+        <button type="button" class="btn-remove" onclick="removeField(${tableIndex}, ${fieldIndex})">🗑️</button>
+    `;
+    
+    return row;
+}
+
 function getTypeOptions(selected) {
-    const types = ['string', 'text', 'longtext', 'integer', 'bigint', 'float', 'decimal', 
-                  'boolean', 'date', 'datetime', 'timestamp', 'json', 'enum'];
+    const types = [
+        'string', 'text', 'longtext', 'mediumtext',
+        'integer', 'bigint', 'tinyint', 'smallint', 'mediumint',
+        'float', 'double', 'decimal',
+        'boolean', 'date', 'datetime', 'timestamp', 'time', 'year',
+        'json', 'enum', 'set'
+    ];
     
     return types.map(type => 
-        `<option value="${type}" ${type === selected ? 'selected' : ''}>${type}</option>`
+        `<option value="${type}" ${type === selected ? 'selected' : ''}>${type.toUpperCase()}</option>`
     ).join('');
 }
 
-function removeTable(index) {
-    if (confirm('¿Eliminar esta tabla?')) {
-        tables.splice(index, 1);
-        renderTables();
-    }
+// ============================================
+// FUNCIONES DE ACTUALIZACIÓN DE CAMPOS
+// ============================================
+function updateFieldName(tableIndex, fieldIndex, value) {
+    tables[tableIndex].fields[fieldIndex].name = value;
 }
 
-function removeField(tableIndex, fieldIndex) {
-    tables[tableIndex].fields.splice(fieldIndex, 1);
-    renderFields(tableIndex);
+function updateFieldType(tableIndex, fieldIndex, value) {
+    tables[tableIndex].fields[fieldIndex].type = value;
+    renderFields(tableIndex); // Re-renderizar para actualizar disabled
 }
 
-// Relaciones
+function updateFieldLength(tableIndex, fieldIndex, value) {
+    tables[tableIndex].fields[fieldIndex].length = value;
+}
+
+function updateFieldNullable(tableIndex, fieldIndex, checked) {
+    tables[tableIndex].fields[fieldIndex].nullable = checked;
+}
+
+function updateFieldUnsigned(tableIndex, fieldIndex, checked) {
+    tables[tableIndex].fields[fieldIndex].unsigned = checked;
+}
+
+// ============================================
+// GESTIÓN DE RELACIONES
+// ============================================
 function addRelation() {
+    console.log('➕ Agregando relación');
+    
     relations.push({
         from_table: '',
         from_column: '',
@@ -483,165 +755,132 @@ function addRelation() {
         on_delete: 'CASCADE',
         on_update: 'CASCADE'
     });
+    
+    renderRelations();
+}
+
+function removeRelation(index) {
+    console.log('🗑️ Eliminando relación:', index);
+    relations.splice(index, 1);
     renderRelations();
 }
 
 function renderRelations() {
     const container = document.getElementById('relationsContainer');
-    container.innerHTML = '';
-
-    if (relations.length === 0) {
-        container.innerHTML = '<p class="text-muted">No hay relaciones. Las relaciones son opcionales.</p>';
+    
+    if (!container) {
+        console.error('❌ No se encontró relationsContainer');
         return;
     }
-
-    relations.forEach((relation, index) => {
-        const relationCard = document.createElement('div');
-        relationCard.className = 'relation-card';
-        relationCard.innerHTML = `
-            <h4>Relación #${index + 1}</h4>
-            <div class="relation-row">
-                <div>
-                    <div class="label-small">Tabla Origen</div>
-                    <select onchange="relations[${index}].from_table = this.value">
-                        <option value="">Seleccionar...</option>
-                        ${tables.map(t => `<option value="${t.name}" ${relation.from_table === t.name ? 'selected' : ''}>${t.name}</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div>
-                    <div class="label-small">Campo Origen</div>
-                    <input type="text" placeholder="campo_id" value="${relation.from_column}"
-                           onchange="relations[${index}].from_column = this.value">
-                </div>
-                
-                <div>
-                    <div class="label-small">Tabla Destino</div>
-                    <select onchange="relations[${index}].to_table = this.value">
-                        <option value="">Seleccionar...</option>
-                        ${tables.map(t => `<option value="${t.name}" ${relation.to_table === t.name ? 'selected' : ''}>${t.name}</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div>
-                    <div class="label-small">Campo Destino</div>
-                    <input type="text" value="${relation.to_column}"
-                           onchange="relations[${index}].to_column = this.value">
-                </div>
-                
-                <div>
-                    <div class="label-small">ON DELETE</div>
-                    <select onchange="relations[${index}].on_delete = this.value">
-                        <option value="CASCADE" ${relation.on_delete === 'CASCADE' ? 'selected' : ''}>CASCADE</option>
-                        <option value="SET NULL" ${relation.on_delete === 'SET NULL' ? 'selected' : ''}>SET NULL</option>
-                        <option value="RESTRICT" ${relation.on_delete === 'RESTRICT' ? 'selected' : ''}>RESTRICT</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <div class="label-small">ON UPDATE</div>
-                    <select onchange="relations[${index}].on_update = this.value">
-                        <option value="CASCADE" ${relation.on_update === 'CASCADE' ? 'selected' : ''}>CASCADE</option>
-                        <option value="RESTRICT" ${relation.on_update === 'RESTRICT' ? 'selected' : ''}>RESTRICT</option>
-                    </select>
-                </div>
-                
-                <button class="btn-remove" onclick="removeRelation(${index})">🗑️</button>
+    
+    container.innerHTML = '';
+    
+    if (relations.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: #fff3cd; border-radius: 8px; border: 2px dashed #ffc107;">
+                <p style="color: #856404; margin: 0;">
+                    🔗 No hay relaciones definidas (opcional)
+                </p>
             </div>
         `;
+        return;
+    }
+    
+    relations.forEach((relation, index) => {
+        const relationCard = createRelationCard(relation, index);
         container.appendChild(relationCard);
     });
 }
 
-function removeRelation(index) {
-    relations.splice(index, 1);
-    renderRelations();
+function createRelationCard(relation, index) {
+    const card = document.createElement('div');
+    card.className = 'relation-card';
+    card.innerHTML = `
+        <h4>🔗 Relación #${index + 1}</h4>
+        <div class="relation-row">
+            <div>
+                <div class="label-small">Tabla Origen</div>
+                <select onchange="updateRelationFromTable(${index}, this.value)">
+                    <option value="">Seleccionar...</option>
+                    ${tables.map(t => `<option value="${t.name}" ${relation.from_table === t.name ? 'selected' : ''}>${t.name}</option>`).join('')}
+                </select>
+            </div>
+            
+            <div>
+                <div class="label-small">Campo Origen</div>
+                <input type="text" 
+                       placeholder="user_id" 
+                       value="${relation.from_column}"
+                       onchange="updateRelationFromColumn(${index}, this.value)">
+            </div>
+            
+            <div>
+                <div class="label-small">Tabla Destino</div>
+                <select onchange="updateRelationToTable(${index}, this.value)">
+                    <option value="">Seleccionar...</option>
+                    ${tables.map(t => `<option value="${t.name}" ${relation.to_table === t.name ? 'selected' : ''}>${t.name}</option>`).join('')}
+                </select>
+            </div>
+            
+            <div>
+                <div class="label-small">Campo Destino</div>
+                <input type="text" 
+                       value="${relation.to_column}"
+                       onchange="updateRelationToColumn(${index}, this.value)">
+            </div>
+            
+            <div>
+                <div class="label-small">ON DELETE</div>
+                <select onchange="updateRelationOnDelete(${index}, this.value)">
+                    <option value="CASCADE" ${relation.on_delete === 'CASCADE' ? 'selected' : ''}>CASCADE</option>
+                    <option value="SET NULL" ${relation.on_delete === 'SET NULL' ? 'selected' : ''}>SET NULL</option>
+                    <option value="RESTRICT" ${relation.on_delete === 'RESTRICT' ? 'selected' : ''}>RESTRICT</option>
+                </select>
+            </div>
+            
+            <div>
+                <div class="label-small">ON UPDATE</div>
+                <select onchange="updateRelationOnUpdate(${index}, this.value)">
+                    <option value="CASCADE" ${relation.on_update === 'CASCADE' ? 'selected' : ''}>CASCADE</option>
+                    <option value="RESTRICT" ${relation.on_update === 'RESTRICT' ? 'selected' : ''}>RESTRICT</option>
+                </select>
+            </div>
+            
+            <button type="button" class="btn-remove" onclick="removeRelation(${index})">🗑️</button>
+        </div>
+    `;
+    
+    return card;
 }
 
-// Vista Previa
+// Funciones de actualización de relaciones
+function updateRelationFromTable(index, value) { relations[index].from_table = value; }
+function updateRelationFromColumn(index, value) { relations[index].from_column = value; }
+function updateRelationToTable(index, value) { relations[index].to_table = value; }
+function updateRelationToColumn(index, value) { relations[index].to_column = value; }
+function updateRelationOnDelete(index, value) { relations[index].on_delete = value; }
+function updateRelationOnUpdate(index, value) { relations[index].on_update = value; }
+
+// ============================================
+// VISTA PREVIA Y GENERACIÓN
+// ============================================
 function updatePreview() {
     const schema = buildSchema();
-    document.getElementById('jsonPreview').textContent = JSON.stringify(schema, null, 2);
+    const preview = document.getElementById('jsonPreview');
+    
+    if (preview) {
+        preview.textContent = JSON.stringify(schema, null, 2);
+    }
 }
 
 function buildSchema() {
     return {
-        database_name: document.getElementById('dbName').value || 'mi_base_datos',
-        description: document.getElementById('dbDescription').value || '',
-        insert_sample_data: document.getElementById('insertSampleData').checked,
+        database_name: document.getElementById('dbName')?.value || 'mi_base_datos',
+        description: document.getElementById('dbDescription')?.value || '',
+        insert_sample_data: document.getElementById('insertSampleData')?.checked || false,
         tables: tables,
         relationships: relations
     };
-}
-
-// Generar Base de Datos
-function generateDatabase() {
-    const schema = buildSchema();
-    
-    // Validaciones
-    if (!schema.database_name || schema.database_name === 'mi_base_datos') {
-        alert('❌ Debes especificar un nombre válido para la base de datos');
-        switchTab('config');
-        document.getElementById('dbName').focus();
-        return;
-    }
-
-    if (tables.length === 0) {
-        alert('❌ Debes agregar al menos una tabla');
-        switchTab('tables');
-        return;
-    }
-
-    // Validar que las tablas tengan nombre
-    for (let i = 0; i < tables.length; i++) {
-        if (!tables[i].name) {
-            alert(`❌ La tabla #${i + 1} no tiene nombre`);
-            switchTab('tables');
-            return;
-        }
-        if (!tables[i].fields || tables[i].fields.length === 0) {
-            alert(`❌ La tabla "${tables[i].name}" no tiene campos`);
-            switchTab('tables');
-            return;
-        }
-    }
-
-    // Mostrar loading
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '⏳ Generando...';
-
-    // Enviar al servidor
-    fetch(BASE_PATH + '/api/generate-full-database', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(schema)
-    })
-    .then(response => response.json())
-    .then(data => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-
-        if (data.success) {
-            alert('✅ ¡Base de datos y CRUDs generados correctamente!\n\n' +
-                  'Tablas creadas: ' + data.tables_count + '\n' +
-                  'Relaciones: ' + data.relations_count + '\n\n' +
-                  'Puedes acceder a los CRUDs desde el menú principal.');
-            window.location.href = BASE_PATH + '/';
-        } else {
-            alert('❌ Error al generar:\n\n' + data.error);
-            console.error('Error details:', data);
-        }
-    })
-    .catch(error => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-        alert('❌ Error de conexión: ' + error.message);
-        console.error('Fetch error:', error);
-    });
 }
 
 function downloadJSON() {
@@ -655,152 +894,146 @@ function downloadJSON() {
     URL.revokeObjectURL(url);
 }
 
-// Cargar Ejemplos
+function generateDatabase() {
+    const schema = buildSchema();
+    
+    // Validaciones
+    if (!schema.database_name || schema.database_name === 'mi_base_datos') {
+        alert('❌ Debes especificar un nombre válido para la base de datos');
+        switchTab('config');
+        document.getElementById('dbName')?.focus();
+        return;
+    }
+
+    if (tables.length === 0) {
+        alert('❌ Debes agregar al menos una tabla');
+        switchTab('tables');
+        return;
+    }
+
+    // Validar tablas
+    for (let i = 0; i < tables.length; i++) {
+        if (!tables[i].name) {
+            alert(`❌ La tabla #${i + 1} no tiene nombre`);
+            switchTab('tables');
+            return;
+        }
+        if (!tables[i].fields || tables[i].fields.length === 0) {
+            alert(`❌ La tabla "${tables[i].name}" no tiene campos`);
+            switchTab('tables');
+            return;
+        }
+    }
+
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '⏳ Generando...';
+
+    fetch(BASE_PATH + '/api/generate-full-database', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schema)
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+
+        if (data.success) {
+            alert('✅ ¡Base de datos y CRUDs generados correctamente!\n\n' +
+                  `Tablas: ${data.tables_count}\n` +
+                  `Relaciones: ${data.relations_count}`);
+            window.location.href = BASE_PATH + '/';
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        alert('❌ Error de conexión: ' + error.message);
+        console.error(error);
+    });
+}
+
+// ============================================
+// EJEMPLOS PREDEFINIDOS
+// ============================================
 function loadExample(example) {
     const examples = {
         blog: {
-            "database_name":"blog_system",
-            "description":"Sistema de blog completo con usuarios, posts y comentarios",
-            "insert_sample_data":false,
-            "tables":[
+            database_name: "blog_system",
+            description: "Sistema de blog completo",
+            insert_sample_data: false,
+            tables: [
                 {
-                    "id":"table_users",
-                    "name":"users",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"name","type":"string","length":100,"nullable":false,"unsigned":false},
-                        {"name":"email","type":"string","length":150,"nullable":false,"unsigned":false},
-                        {"name":"password","type":"string","length":255,"nullable":false,"unsigned":false}
+                    id: "table_users",
+                    name: "users",
+                    timestamps: true,
+                    soft_deletes: false,
+                    fields: [
+                        { name: "name", type: "string", length: 100, nullable: false, unsigned: false },
+                        { name: "email", type: "string", length: 150, nullable: false, unsigned: false },
+                        { name: "password", type: "string", length: 255, nullable: false, unsigned: false }
                     ]
                 },
                 {
-                    "id":"table_posts",
-                    "name":"posts",
-                    "timestamps":true,
-                    "soft_deletes":true,
-                    "fields":[
-                        {"name":"user_id","type":"integer","length":null,"nullable":false,"unsigned":true},
-                        {"name":"title","type":"string","length":255,"nullable":false,"unsigned":false},
-                        {"name":"content","type":"longtext","length":null,"nullable":false,"unsigned":false}
-                    ]
-                },
-                {
-                    "id":"table_comments",
-                    "name":"comments",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"post_id","type":"integer","length":null,"nullable":false,"unsigned":true},
-                        {"name":"content","type":"text","length":null,"nullable":false,"unsigned":false}
+                    id: "table_posts",
+                    name: "posts",
+                    timestamps: true,
+                    soft_deletes: true,
+                    fields: [
+                        { name: "user_id", type: "integer", length: null, nullable: false, unsigned: true },
+                        { name: "title", type: "string", length: 255, nullable: false, unsigned: false },
+                        { name: "content", type: "longtext", length: null, nullable: false, unsigned: false }
                     ]
                 }
             ],
-            "relationships":[
-                {"from_table":"posts","from_column":"user_id","to_table":"users","to_column":"id","on_delete":"CASCADE","on_update":"CASCADE"},
-                {"from_table":"comments","from_column":"post_id","to_table":"posts","to_column":"id","on_delete":"CASCADE","on_update":"CASCADE"}
+            relationships: [
+                { from_table: "posts", from_column: "user_id", to_table: "users", to_column: "id", on_delete: "CASCADE", on_update: "CASCADE" }
             ]
         },
-        
         ecommerce: {
-            "database_name":"ecommerce_db",
-            "description":"Sistema de e-commerce con productos y órdenes",
-            "insert_sample_data":false,
-            "tables":[
+            database_name: "ecommerce_db",
+            description: "Sistema de tienda online",
+            insert_sample_data: false,
+            tables: [
                 {
-                    "id":"table_customers",
-                    "name":"customers",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"name","type":"string","length":100,"nullable":false,"unsigned":false},
-                        {"name":"email","type":"string","length":150,"nullable":false,"unsigned":false}
-                    ]
-                },
-                {
-                    "id":"table_products",
-                    "name":"products",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"name","type":"string","length":200,"nullable":false,"unsigned":false},
-                        {"name":"price","type":"decimal","length":"10,2","nullable":false,"unsigned":false},
-                        {"name":"stock","type":"integer","length":null,"nullable":false,"unsigned":true}
-                    ]
-                },
-                {
-                    "id":"table_orders",
-                    "name":"orders",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"customer_id","type":"integer","length":null,"nullable":false,"unsigned":true},
-                        {"name":"total","type":"decimal","length":"10,2","nullable":false,"unsigned":false}
+                    id: "table_products",
+                    name: "products",
+                    timestamps: true,
+                    soft_deletes: false,
+                    fields: [
+                        { name: "name", type: "string", length: 200, nullable: false, unsigned: false },
+                        { name: "price", type: "decimal", length: "10,2", nullable: false, unsigned: false },
+                        { name: "stock", type: "integer", length: null, nullable: false, unsigned: true }
                     ]
                 }
             ],
-            "relationships":[
-                {"from_table":"orders","from_column":"customer_id","to_table":"customers","to_column":"id","on_delete":"RESTRICT","on_update":"CASCADE"}
-            ]
+            relationships: []
         },
-        
         school: {
-            "database_name":"school_management",
-            "description":"Sistema de gestión escolar",
-            "insert_sample_data":false,
-            "tables":[
+            database_name: "school_management",
+            description: "Sistema escolar",
+            insert_sample_data: false,
+            tables: [
                 {
-                    "id":"table_students",
-                    "name":"students",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"first_name","type":"string","length":50,"nullable":false,"unsigned":false},
-                        {"name":"last_name","type":"string","length":50,"nullable":false,"unsigned":false},
-                        {"name":"email","type":"string","length":100,"nullable":false,"unsigned":false}
-                    ]
-                },
-                {
-                    "id":"table_teachers",
-                    "name":"teachers",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"first_name","type":"string","length":50,"nullable":false,"unsigned":false},
-                        {"name":"last_name","type":"string","length":50,"nullable":false,"unsigned":false}
-                    ]
-                },
-                {
-                    "id":"table_courses",
-                    "name":"courses",
-                    "timestamps":false,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"code","type":"string","length":20,"nullable":false,"unsigned":false},
-                        {"name":"name","type":"string","length":100,"nullable":false,"unsigned":false}
-                    ]
-                },
-                {
-                    "id":"table_enrollments",
-                    "name":"enrollments",
-                    "timestamps":true,
-                    "soft_deletes":false,
-                    "fields":[
-                        {"name":"student_id","type":"integer","length":null,"nullable":false,"unsigned":true},
-                        {"name":"course_id","type":"integer","length":null,"nullable":false,"unsigned":true},
-                        {"name":"grade","type":"decimal","length":"5,2","nullable":true,"unsigned":false}
+                    id: "table_students",
+                    name: "students",
+                    timestamps: true,
+                    soft_deletes: false,
+                    fields: [
+                        { name: "first_name", type: "string", length: 50, nullable: false, unsigned: false },
+                        { name: "last_name", type: "string", length: 50, nullable: false, unsigned: false }
                     ]
                 }
             ],
-            "relationships":[
-                {"from_table":"enrollments","from_column":"student_id","to_table":"students","to_column":"id","on_delete":"CASCADE","on_update":"CASCADE"},
-                {"from_table":"enrollments","from_column":"course_id","to_table":"courses","to_column":"id","on_delete":"RESTRICT","on_update":"CASCADE"}
-            ]
+            relationships: []
         }
     };
 
     const schema = examples[example];
-    
     if (!schema) {
         alert('❌ Ejemplo no encontrado');
         return;
@@ -816,16 +1049,35 @@ function loadExample(example) {
     renderTables();
     renderRelations();
     
-    alert('✅ Ejemplo cargado: ' + schema.description + '\n\nRevisa las pestañas de Configuración, Tablas y Relaciones.');
+    alert('✅ Ejemplo cargado correctamente');
     switchTab('config');
 }
 
-// Inicializar con una tabla vacía
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('Database Builder inicializado');
-    renderTables();
-    renderRelations();
-});
+// Exponer funciones globales necesarias
+window.addTable = addTable;
+window.removeTable = removeTable;
+window.addField = addField;
+window.removeField = removeField;
+window.addRelation = addRelation;
+window.removeRelation = removeRelation;
+window.nextTab = nextTab;
+window.generateDatabase = generateDatabase;
+window.downloadJSON = downloadJSON;
+window.loadExample = loadExample;
+window.updateTableName = updateTableName;
+window.updateTableTimestamps = updateTableTimestamps;
+window.updateTableSoftDeletes = updateTableSoftDeletes;
+window.updateFieldName = updateFieldName;
+window.updateFieldType = updateFieldType;
+window.updateFieldLength = updateFieldLength;
+window.updateFieldNullable = updateFieldNullable;
+window.updateFieldUnsigned = updateFieldUnsigned;
+window.updateRelationFromTable = updateRelationFromTable;
+window.updateRelationFromColumn = updateRelationFromColumn;
+window.updateRelationToTable = updateRelationToTable;
+window.updateRelationToColumn = updateRelationToColumn;
+window.updateRelationOnDelete = updateRelationOnDelete;
+window.updateRelationOnUpdate = updateRelationOnUpdate;
     </script>
 </body>
 </html>
