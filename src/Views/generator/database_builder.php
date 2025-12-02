@@ -383,11 +383,14 @@
 // CONSTRUCTOR DE BASE DE DATOS - MEJORADO
 // ============================================
 
-const BASE_PATH = window.BASE_PATH || '';
+
+
+
+const BASE_PATH = '<?= BASE_PATH ?>' || '/crud-generator';
+console.log('BASE_PATH definido:', BASE_PATH);
 let tables = [];
 let relations = [];
 let tableCounter = 0;
-
 // ============================================
 // INICIALIZACIÓN
 // ============================================
@@ -937,7 +940,6 @@ function generateDatabase() {
     const schema = buildSchema();
     
     console.log('Schema construido:', schema);
-    console.log('BASE_PATH:', BASE_PATH);
     
     // Validaciones
     if (!schema.database_name || schema.database_name === 'mi_base_datos') {
@@ -978,16 +980,33 @@ function generateDatabase() {
 
     console.log('✅ Validaciones pasadas');
 
-    const button = event.target;
+    // IMPORTANTE: Prevenir el comportamiento por defecto del botón
+    if (event && event.preventDefault) {
+        event.preventDefault();
+    }
+
+    const button = event ? event.target : document.querySelector('button[onclick*="generateDatabase"]');
+    if (!button) {
+        console.error('❌ No se encontró el botón');
+        return;
+    }
+    
     const originalText = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '⏳ Generando...';
 
-    const url = BASE_PATH + '/api/generate-full-database';
-    console.log('URL completa:', url);
+    // CORRECCIÓN: Asegurarse de que BASE_PATH esté definido
+    const basePath = typeof BASE_PATH !== 'undefined' ? BASE_PATH : '/crud-generator';
+    
+    // CORRECCIÓN: Construir la URL completa correctamente
+    const baseUrl = window.location.origin;
+    const fullUrl = baseUrl + basePath + '/api/generate-full-database';
+    
+    console.log('BASE_PATH:', basePath);
+    console.log('URL completa:', fullUrl);
     console.log('Enviando request...');
 
-    fetch(url, {
+    fetch(fullUrl, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
@@ -997,15 +1016,15 @@ function generateDatabase() {
     })
     .then(response => {
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
+        console.log('Response headers:', [...response.headers.entries()]);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Primero obtener el texto para ver qué respondió
+        // Obtener el texto primero para ver qué respondió
         return response.text().then(text => {
-            console.log('Response text:', text);
+            console.log('Response text:', text.substring(0, 500));
             
             try {
                 return JSON.parse(text);
@@ -1026,9 +1045,11 @@ function generateDatabase() {
                   `Base de datos: ${schema.database_name}\n` +
                   `Tablas: ${data.tables_count}\n` +
                   `Relaciones: ${data.relations_count}`);
-            window.location.href = BASE_PATH + '/';
+            
+            // Redirigir al inicio
+            window.location.href = basePath + '/';
         } else {
-            alert('❌ Error: ' + data.error);
+            alert('❌ Error: ' + (data.error || 'Error desconocido'));
             if (data.trace) {
                 console.error('Stack trace:', data.trace);
             }
@@ -1044,9 +1065,9 @@ function generateDatabase() {
         if (error.message.includes('404')) {
             errorMsg += '\n\n🔍 Posibles causas:\n' +
                        '1. La ruta /api/generate-full-database no está registrada en index.php\n' +
-                       '2. El archivo index.php no incluye DatabaseGeneratorController\n' +
+                       '2. El BASE_PATH no coincide con la configuración\n' +
                        '3. Hay un problema con el .htaccess\n\n' +
-                       'Revisa el archivo index.php y verifica que las rutas estén correctas.';
+                       'URL intentada: ' + fullUrl;
         }
         
         alert(errorMsg);
@@ -1149,6 +1170,7 @@ function loadExample(example) {
 }
 
 // Exponer funciones globales necesarias
+
 window.addTable = addTable;
 window.removeTable = removeTable;
 window.addField = addField;
